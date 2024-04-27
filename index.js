@@ -22,6 +22,12 @@ client.once("ready", (message) => {
   }
 });
 
+client.on("error", () => console.error(`Discord client error ${error}`));
+
 client.on("messageCreate", messageCreate);
 
-client.login(process.env.TOKEN);
+const loggedIn = client.login(process.env.TOKEN);
+
+if (loggedIn) {
+  console.log("Bot is online!");
+}
