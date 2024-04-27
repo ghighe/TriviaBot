@@ -22,7 +22,6 @@ function formatQuestion(question) {
 function increasePlayerPoints(playerName) {
   if (!playersPoints[playerName]) {
     playersPoints[playerName] = 0;
-    console.log(playersPoints);
   }
   playersPoints[playerName]++;
 

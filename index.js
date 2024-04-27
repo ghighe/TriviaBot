@@ -22,8 +22,6 @@ client.once("ready", (message) => {
   }
 });
 
-client.on("error", () => console.error(`Discord client error ${error}`));
-
 client.on("messageCreate", messageCreate);
 
 const loggedIn = client.login(process.env.TOKEN);

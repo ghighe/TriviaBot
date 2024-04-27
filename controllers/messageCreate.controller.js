@@ -8,12 +8,16 @@ const {
   playersPoints
 } = require("../utils/utils");
 const { combinedFilter } = require("../filters/collector_filters");
+const EventEmiter = require("events");
+
+//class BotEvents extends EventEmiter {} //optional
 
 let isTriviaActive = false;
 let questionInterval;
 let collectedUserName = "";
 const gamePrefix = "!";
 let triviaFirstQuestion, questionFormat;
+const botEvents = new EventEmiter(); //create an instance of eventEmitter
 
 const messageCreate = async (msg) => {
   if (!msg.content.startsWith(gamePrefix) || msg.author.bot) return;
@@ -31,15 +35,20 @@ const messageCreate = async (msg) => {
     gameParticipants.delete(collectedUserName);
     clearInterval(questionInterval); //stop the question interval
     isTriviaActive = false;
+    botEvents.emit("stopGame");
+    Object.keys(playersPoints).forEach((key) => {
+      playersPoints[key] = 0;
+    });
     msg.channel.send(`${msg.author.username} stopped the game!`);
-  } else if (playerCommand === "points" && isTriviaActive) {
-    let pointsMessage = "Players Points:\n";
+  } else if (playerCommand === "score" && isTriviaActive) {
+    let pointsMessage = "";
     for (const playerName in playersPoints) {
       if (Object.prototype.hasOwnProperty.call(playersPoints, playerName)) {
         const points = playersPoints[playerName];
         pointsMessage += `${playerName} - ${points} ${
           points > 1 ? "Points" : "Point"
         }`;
+        console.log(`${playersPoints[playerName]}`);
       }
     }
     msg.channel.send(pointsMessage);
@@ -74,6 +83,7 @@ async function sendNewQuestion(channel) {
     time: 15000,
     max: 4
   });
+
   //wait for user response
   collector.on("collect", (collected) => {
     if (!collected.content) return;
@@ -95,6 +105,12 @@ async function sendNewQuestion(channel) {
     }
 
     // Stop the collector after a response is received
+  });
+
+  botEvents.on("stopGame", () => {
+    if (collector) {
+      collector.stop();
+    }
   });
 
   collector.on("end", (collected, reason) => {
